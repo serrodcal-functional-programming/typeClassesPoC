@@ -1,15 +1,15 @@
 # typeClassesPoC
 
-This repository consists of a proof of concept about Type Classes for learning and 
+This repository consists of a proof of concept about Type Classes for learning and
 understanding. Also, it includes an explanation below
 
 ## What are the Type Classes?
 
-At first, we need to understand what is Polymorphism. Polymorphism is an useful feature 
-in high level languages. It allows us to create interfaces, operate with abstraction and 
+At first, we need to understand what is Polymorphism. Polymorphism is an useful feature
+in high level languages. It allows us to create interfaces, operate with abstraction and
 deal with implementation based on types.
 
-Most OOP languages uses inheritance to achive polymorphism. But, there is another way to achive 
+Most OOP languages uses inheritance to achive polymorphism. But, there is another way to achive
 polymorphism: **type classes**.
 
 **TL;DR**: OOP puts data and function in the one place (classes). Type classes approach is different,
@@ -42,8 +42,8 @@ class Truck(passengers: Int, load: Int) extends Vehicle {
 def weightOf(vehicle: Vehicle): Int = vehicle.weight
 
 // Usage
-areaOf(new Car(5))
-areaOf(new Truck(1, 5000))
+weightOf(new Car(5))
+weightOf(new Truck(1, 5000))
 ```
 
 Our generic function works on vehicles because we pass it the implementation excplicitly.
@@ -75,18 +75,18 @@ class TruckVehicle(passengers: Int, load: Int) extends Vehicle {
 def weightOf(vehicle: Vehicle): Int = vehicle.weight
 
 // Usage
-areaOf(new CarVehicle(5))
-areaOf(new TruckVehicle(1, 5000))
+weightOf(new CarVehicle(5))
+weightOf(new TruckVehicle(1, 5000))
 ```
 
-We added two case classes, car and truck, which have the data. In other place, we have two 
-weight function implementation: `CarVehicle` and `TruckVehicle`. Here, we have separated data 
+We added two case classes, car and truck, which have the data. In other place, we have two
+weight function implementation: `CarVehicle` and `TruckVehicle`. Here, we have separated data
 from functionality.
 
 Now, we don't achieve anything and we have two problems:
 
 1. Code duplication because if we change `Car` we need to change `CarVehicle`.
-2. `weightOf` function needs the instance, not a case class itself. 
+2. `weightOf` function needs the instance, not a case class itself.
 
 Let's go to fix these removing constructors:
 
@@ -113,8 +113,8 @@ class TruckVehicle extends Vehicle {
 def weightOf(vehicle: Vehicle): Int = vehicle.weight
 
 // Usage
-areaOf(new CarVehicle)
-areaOf(new TruckVehicle)
+weightOf(new CarVehicle)
+weightOf(new TruckVehicle)
 ```
 
 No code duplication, but we need the information about in order to calculate the weight.
@@ -159,11 +159,11 @@ class TruckVehicle extends Vehicle[Truck] {
 
 def weightOf[A](vehicle: Vehicle[A]): Int = vehicle.weight(???)
 
-areaOf(new CarVehicle)
-areaOf(new TruckVehicle)
+weightOf(new CarVehicle)
+weightOf(new TruckVehicle)
 ```
 
-Now, we need to pass the implementation to call `weightOf` function. 
+Now, we need to pass the implementation to call `weightOf` function.
 
 ```scala
 trait Vehicle[A] {
@@ -183,8 +183,8 @@ class TruckVehicle extends Vehicle[Truck] {
 
 def weightOf[A](vehicleInfo: A, vehicle: Vehicle[A]): Int = vehicle.weight(vehicleInfo)
 
-areaOf(Car(5), new CarVehicle)
-areaOf(Truck(1,5000), new TruckVehicle)
+weightOf(Car(5), new CarVehicle)
+weightOf(Truck(1,5000), new TruckVehicle)
 ```
 
 Let's rename the params to make more sense:
@@ -192,8 +192,8 @@ Let's rename the params to make more sense:
 ```scala
 def weightOf[A](vehicle: A, vehicleImpl: Vehicle[A]): Int = vehicleImpl.weight(vehicle)
 
-areaOf(Car(5), new CarVehicle)
-areaOf(Truck(1,5000), new TruckVehicle)
+weightOf(Car(5), new CarVehicle)
+weightOf(Truck(1,5000), new TruckVehicle)
 ```
 
 We have to pass the implementation explicitly, but in Scala we can pass the implementation by implicity.
@@ -201,8 +201,8 @@ We have to pass the implementation explicitly, but in Scala we can pass the impl
 ```Scala
 def weightOf[A](vehicle: A)(implicit vehicleImpl: Vehicle[A]): Int = vehicleImpl.weight(vehicle)
 
-areaOf(Car(5))
-areaOf(Truck(1,5000)
+weightOf(Car(5))
+weightOf(Truck(1,5000))
 ```
 
 This won't compile, we need to declare our implementations as implicit:
@@ -211,8 +211,8 @@ This won't compile, we need to declare our implementations as implicit:
 implicit val carVehicle = new CarVehicle
 implicit val truckVehicle = new TruckVehicle
 
-areaOf(Car(5))
-areaOf(Truck(1,5000)
+weightOf(Car(5))
+weightOf(Truck(1,5000))
 ```
 
 It feels like a boilerplate, we have to instantiate them or import. We are going to fix that:
@@ -235,9 +235,9 @@ implicit object TruckVehicle extends Vehicle[Truck] {
 
 def weightOf[A](vehicle: A)(implicit vehicleImpl: Vehicle[A]): Int = vehicleImpl.weight(vehicle)
 
-areaOf(Car(5))
-areaOf(Truck(1,5000)
-``` 
+weightOf(Car(5))
+weightOf(Truck(1,5000))
+```
 
 And, that's all folks!
 
@@ -245,8 +245,19 @@ And, that's all folks!
 
 ### Building
 
-_Under construction_
+```scala
+~$ mvn package
+```
 
 ### Running
 
-_Under construction_
+```scala
+~$ java -jar target/type-classes-0.1.0-SNAPSHOT-allinone.jar
+375
+5075
+```
+
+### Built with
+
+* [Maven](https://maven.apache.org/)
+* [Scala](https://www.scala-lang.org/)
