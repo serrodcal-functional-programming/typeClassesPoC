@@ -239,6 +239,55 @@ weightOf(Car(5))
 weightOf(Truck(1,5000))
 ```
 
+Finally, In many cases, including the `weightOf` function above, the implicit arguments can be written with syntactic sugar:
+
+```scala
+def weightOf[A: Vehicle](vehicle: A): Int = ???
+```
+
+While nicer to read as a user, it comes at a cost for the implementer.
+
+```scala
+// Defined in the standard library, shown for illustration purposes
+// Implicitly looks in implicit scope for a value of type `A` and just hands it back
+def implicity[A](implicit vehicleImpl: Vehicle[A]) = vehicleImpl
+
+def weightOf[A: Vehicle](vehicle: A): Int = implicity[A].weight(vehicle)
+```
+
+In this case, our program looks like given below:
+
+```scala
+object Main extends App{
+
+  trait Vehicle[A] {
+    def weight(a: A): Int
+  }
+
+  case class Car(passengers: Int)
+  case class Truck(passengers: Int, load: Int)
+
+  implicit object CarVehicle extends Vehicle[Car] {
+    override def weight(car: Car): Int = car.passengers * 75
+  }
+
+  implicit object TruckVehicle extends Vehicle[Truck] {
+    override def weight(truck: Truck): Int = (truck.passengers * 75) + truck.load
+  }
+
+  def implicity[A](implicit vehicleImpl: Vehicle[A]) = vehicleImpl
+
+  def weightOf[A: Vehicle](vehicle: A): Int = implicity[A].weight(vehicle)
+
+  val weightOfCar = weightOf(Car(5))
+  val weightOfTruck = weightOf(Truck(1,5000))
+
+  println(weightOfCar)
+  println(weightOfTruck)
+
+}
+```
+
 And, that's all folks!
 
 ## Code
